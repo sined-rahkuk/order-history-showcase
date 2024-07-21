@@ -1,0 +1,141 @@
+<!-- Template for Filters -->
+<ng-template #filterTemplate>
+    <form [formGroup]="filterForm" class="filters">
+        <div class="filters__group">
+            <div class="filters__item filters_status">
+                <div class="filters_status-label">Status</div>
+                <div class="filters_status-checkboxes">
+                    <mat-checkbox formControlName="statusPending">Pending</mat-checkbox>
+                    <mat-checkbox formControlName="statusInProgress">In Progress</mat-checkbox>
+                    <mat-checkbox formControlName="statusCompleted">Completed</mat-checkbox>
+                </div>
+            </div>
+            <div class="filters__divider"></div>
+            <div class="filters__item filters__product-line">
+                <mat-form-field appearance="outline" class="filters__no-outline filters__product-line-select">
+                    <mat-label class="filters__product-line-label">Product Line</mat-label>
+                    <mat-icon matSuffix class="filters__product-line-icon">keyboard_arrow_down</mat-icon>
+                    <mat-select formControlName="productLine">
+                        <mat-option value="">All Product Lines</mat-option>
+                        <mat-option *ngFor="let productLine of productLines" [value]="productLine">
+                            {{ productLine }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="filters__divider"></div>
+            <div class="filters__item filters__datepicker">
+                <mat-form-field [floatLabel]="'always'">
+                    <mat-label class="filters__datepicker-label">From</mat-label>
+                    <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="startPicker">
+                        <mat-icon matDatepickerToggleIcon class="color-default">calendar_today</mat-icon>
+                    </mat-datepicker-toggle>
+                    <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+            </div>
+            <div class="filters__item filters__datepicker">
+                <mat-form-field [floatLabel]="'always'">
+                    <mat-label class="filters__datepicker-label">To</mat-label>
+                    <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="endPicker">
+                        <mat-icon matDatepickerToggleIcon class="color-default">calendar_today</mat-icon>
+                    </mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+            </div>
+            <div class="filters__item filters__search-box dense-3">
+                <mat-form-field appearance="outline">
+                    <input matInput formControlName="search" placeholder="Search for Order Number">
+                    <button mat-icon-button matSuffix>
+                        <mat-icon class="filters__search-icon">search</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+</ng-template>
+
+<!-- Begin of actual template -->
+<div class="layout">
+    <div class="layout__header">
+        <h1>Order History</h1>
+    </div>
+
+    @if (isMobile) {
+        <!-- Expandable Panel for Mobile Filters -->
+        <mat-accordion class="filters--mobile">
+            <mat-expansion-panel class="filters--mobile__panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Search criteria
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <ng-container *ngTemplateOutlet="filterTemplate"></ng-container>
+            </mat-expansion-panel>
+        </mat-accordion>
+    } @else {
+        <!-- Filters for Desktop -->
+        <div class="filters--desktop">
+            <ng-container *ngTemplateOutlet="filterTemplate"></ng-container>
+        </div>
+    }
+
+    @if (dataSource.data.length) {
+        <!--Display Order table-->
+        <div class="layout__table-container">
+            <table mat-table [dataSource]="dataSource" matSort>
+                <!-- Status Column -->
+                <ng-container matColumnDef="status" sticky>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="offset">Status</th>
+                    <td mat-cell *matCellDef="let order">
+                        <div class="table__status-indicator-wrapper">
+                            <span class="table__status-indicator" [ngClass]="getStatusClass(order.status)"></span>
+                            {{ order.status }}
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Order Number Column -->
+                <ng-container matColumnDef="orderNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="offset">Order Number</th>
+                    <td mat-cell *matCellDef="let order"> {{ order.orderNumber }}</td>
+                </ng-container>
+
+                <!-- Product Line Column -->
+                <ng-container matColumnDef="productLine">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="offset">Product Line</th>
+                    <td mat-cell *matCellDef="let order"> {{ order.productLine }}</td>
+                </ng-container>
+
+                <!-- Product Column -->
+                <ng-container matColumnDef="product">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="offset">Product</th>
+                    <td mat-cell *matCellDef="let order"> {{ order.productName }}</td>
+                </ng-container>
+
+                <!-- Quantity Column -->
+                <ng-container matColumnDef="quantity">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="offset">Quantity</th>
+                    <td mat-cell *matCellDef="let order"> {{ order.quantity }}</td>
+                </ng-container>
+
+                <!-- Date Requested Column -->
+                <ng-container matColumnDef="dateRequested">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="offset">Date Requested</th>
+                    <td mat-cell *matCellDef="let order"> {{ order.dateRequested | date: 'dd.MM.yyyy' }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+    } @else {
+        <!-- Display No Results view instead of the table -->
+        <div class="no-results">
+            <mat-icon>info</mat-icon>
+            <h2>Nothing to display</h2>
+            <p>Please, adjust filters to see more results.</p>
+        </div>
+    }
+</div>
